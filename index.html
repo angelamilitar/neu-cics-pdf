@@ -7,6 +7,24 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
+    --bg: #f0f4f8;
+    --surface: #ffffff;
+    --surface2: #e8edf5;
+    --border: #d1dce8;
+    --border2: #b8c8dc;
+    --text: #0f172a;
+    --text2: #475569;
+    --text3: #94a3b8;
+    --accent: #2563eb;
+    --accent2: #4f46e5;
+    --green: #16a34a;
+    --red: #dc2626;
+    --yellow: #d97706;
+    --teal: #0d9488;
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+  body.dark-mode {
     --bg: #07090f;
     --surface: #0f1320;
     --surface2: #151b2d;
@@ -21,8 +39,6 @@
     --red: #ef4444;
     --yellow: #f59e0b;
     --teal: #14b8a6;
-    --radius: 12px;
-    --radius-sm: 8px;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -318,9 +334,30 @@
   .form-field select option { background: var(--surface); }
   .drop-zone {
     margin-top: 16px; border: 2px dashed var(--border2); border-radius: var(--radius);
-    padding: 28px; text-align: center; color: var(--text3); font-size: 14px;
+    padding: 36px 28px; text-align: center; color: var(--text3); font-size: 14px;
+    cursor: pointer; transition: all .2s; position: relative;
   }
-  .drop-zone-icon { font-size: 28px; margin-bottom: 8px; }
+  .drop-zone:hover, .drop-zone.dragover {
+    border-color: var(--accent);
+    background: rgba(59,126,248,.06);
+    color: var(--text);
+  }
+  .drop-zone-icon { font-size: 36px; margin-bottom: 10px; }
+  .drop-zone input[type="file"] {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    opacity: 0; cursor: pointer;
+  }
+  .drop-zone-filename {
+    margin-top: 10px; font-size: 13px; font-weight: 600;
+    color: var(--accent); display: none;
+  }
+  .drop-zone-filename.visible { display: block; }
+  .file-type-badge {
+    display: inline-block; padding: 3px 10px; border-radius: 6px;
+    font-size: 11px; font-weight: 700; letter-spacing: .5px;
+    background: rgba(59,126,248,.15); color: var(--accent);
+    margin-right: 6px; text-transform: uppercase;
+  }
   .form-actions { display: flex; gap: 12px; margin-top: 16px; }
   .btn-upload {
     padding: 10px 22px; background: linear-gradient(135deg, var(--accent), var(--accent2));
@@ -411,6 +448,7 @@
     <div class="login-logo">C</div>
     <h1 style="font-size:28px;font-weight:700;">CICS DocHub</h1>
     <p style="color:var(--text2);font-size:13px;margin-top:6px;">Digital Repository for College Excellence</p>
+    <button onclick="toggleDark()" id="dark-toggle" style="margin-top:12px;background:var(--surface);border:1px solid var(--border);color:var(--text2);padding:6px 16px;border-radius:20px;font-family:inherit;font-size:12px;cursor:pointer;">🌙 Dark Mode</button>
   </div>
   <div class="login-box">
     <label class="field-label">University Email</label>
@@ -460,6 +498,7 @@
         <div class="avatar" id="s-avatar">J</div>
         <div><div class="user-name" id="s-name">Student</div><div class="user-email" id="s-email">—</div></div>
       </div>
+      <button id="sidebar-dark-toggle" onclick="toggleDark()" style="display:flex;align-items:center;gap:8px;background:none;border:none;color:var(--text2);font-family:inherit;font-size:13px;cursor:pointer;margin-bottom:8px;">🌙 Dark Mode</button>
       <button class="sign-out-btn" onclick="signOut()">
         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
         Sign Out
@@ -519,12 +558,17 @@
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
         Students
       </button>
+      <button class="nav-btn" onclick="switchTab('admin','archive',this)">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+        Archive
+      </button>
     </nav>
     <div class="sidebar-footer">
       <div class="sidebar-user">
         <div class="avatar admin-av" id="a-avatar">A</div>
         <div><div class="user-name" id="a-name">Admin</div><div class="user-email" id="a-email">—</div></div>
       </div>
+      <button id="sidebar-dark-toggle" onclick="toggleDark()" style="display:flex;align-items:center;gap:8px;background:none;border:none;color:var(--text2);font-family:inherit;font-size:13px;cursor:pointer;margin-bottom:8px;">🌙 Dark Mode</button>
       <button class="sign-out-btn" onclick="signOut()">
         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
         Sign Out
@@ -532,6 +576,7 @@
     </div>
   </div>
   <div class="main-content">
+    <!-- Dashboard -->
     <!-- Dashboard -->
     <div id="a-dashboard" class="subpage active">
       <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;">
@@ -592,11 +637,18 @@
         <div class="form-field" style="margin-top:16px;"><label>Description</label>
           <textarea id="f-desc" rows="3" placeholder="Brief description of the document..." style="resize:vertical;"></textarea>
         </div>
-        <div class="drop-zone">
-          <div class="drop-zone-icon">📄</div>
-          <div>Drag & drop PDF file here or click to browse</div>
-          <div style="font-size:12px;color:var(--text3);margin-top:4px;">Stored in Firebase Storage /cics_docs/</div>
-        </div>
+        <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
+  <input type="file" id="file-input" accept="*/*" style="display:none" onchange="handleFileSelect(this)">
+  <div class="drop-zone-icon" id="drop-icon">📂</div>
+  <div id="drop-main-text" style="font-weight:500;">Drag & drop any file here</div>
+  <div style="font-size:12px;color:var(--text3);margin-top:6px;">
+    or <span style="color:var(--accent);font-weight:600;text-decoration:underline;">click to browse</span>
+  </div>
+  <div style="font-size:11px;color:var(--text3);margin-top:8px;">
+    Supports PDF, DOCX, XLSX, PPTX, PNG, JPG and more
+  </div>
+  <div class="drop-zone-filename" id="drop-filename"></div>
+</div>
         <div class="form-actions">
           <button class="btn-upload" onclick="submitUpload()">Upload to Repository</button>
           <button class="btn-cancel" onclick="toggleUploadForm()">Cancel</button>
@@ -619,6 +671,13 @@
         </table>
       </div>
     </div>
+    <!-- Archive -->
+        <div id="a-archive" class="subpage">
+          <div class="page-header"><div class="page-title">Archive</div><div class="page-sub">Deleted documents are stored here for record-keeping.</div></div>
+          <div class="doc-grid" id="a-archive-grid">
+            <div class="empty-state" style="grid-column:1/-1;color:var(--text3);text-align:center;padding:60px 0;">No archived documents yet.</div>
+          </div>
+        </div>
   </div>
 </div>
 
@@ -637,9 +696,8 @@ const CAT_COLORS = {
 };
 
 const users = {
-  'admin@neu.edu.ph':          { role:'admin',   name:'System Admin',    isBlocked:false, program:null },
-  'jcesperanza@neu.edu.ph':    { role:'student', name:'J. Esperanza',    isBlocked:false, program:'BSIT' },
-  'blocked.student@neu.edu.ph':{ role:'student', name:'Blocked Student', isBlocked:true,  program:'BSCS' },
+  'jcesperanza@neu.edu.ph': { role:'admin', name:'J. Esperanza', isBlocked:false, program:null },
+  'blocked.student@neu.edu.ph':{ role:'student', name:'Blocked Student', isBlocked:true, program:'BSCS' },
 };
 
 let docs = [
@@ -652,6 +710,7 @@ let docs = [
 ];
 
 let logs = generateLogs();
+let archivedDocs = [];
 let currentUser = null;
 let currentPeriod = 'weekly';
 let selectedProgram = null;
@@ -769,6 +828,7 @@ function showAdminPage(){
   renderDashboard();
   renderAdminDocs();
   renderStudentTable();
+  renderArchive();
   switchTab('admin','dashboard', document.querySelector('#page-admin .nav-btn'));
 }
 
@@ -849,6 +909,19 @@ function handleDownload(docId){
   const doc = docs.find(d=>d.id===docId); if(!doc) return;
   logs.push({ userId:currentUser.email, documentId:docId, timestamp:new Date() });
   doc.downloads++;
+
+  const url = doc.fileURL || (() => {
+    const content = `Document: ${doc.title}\nCategory: ${doc.category}\nDescription: ${doc.description}`;
+    return URL.createObjectURL(new Blob([content], { type: 'text/plain' }));
+  })();
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = doc.fileName || doc.title.replace(/[^a-z0-9]/gi,'_') + '.txt';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  if(!doc.fileURL) URL.revokeObjectURL(url);
+
   renderStudentDocs();
   if(document.getElementById('a-documents').classList.contains('active')) renderAdminDocs();
   renderDashboard();
@@ -873,26 +946,148 @@ function toggleUploadForm(){
   }
 }
 
+// ── DRAG & DROP SETUP ──
+document.addEventListener('DOMContentLoaded', function(){
+  const zone = document.getElementById('drop-zone');
+  if(!zone) return;
+
+  zone.addEventListener('dragover', function(e){
+    e.preventDefault();
+    zone.classList.add('dragover');
+  });
+
+  zone.addEventListener('dragleave', function(){
+    zone.classList.remove('dragover');
+  });
+
+  zone.addEventListener('drop', function(e){
+    e.preventDefault();
+    zone.classList.remove('dragover');
+    const file = e.dataTransfer.files[0];
+    if(file) applyFile(file);
+  });
+});
+
+function handleFileSelect(input){
+  const file = input.files[0];
+  if(file) applyFile(file);
+}
+
+function applyFile(file){
+  const ext = file.name.split('.').pop().toUpperCase();
+  const sizeKB = file.size / 1024;
+  const sizeMB = (sizeKB / 1024).toFixed(2);
+  const displaySize = sizeKB < 1024 ? Math.round(sizeKB) + ' KB' : sizeMB + ' MB';
+
+  // Auto-fill size field
+  document.getElementById('f-size').value = displaySize;
+
+  // Auto-fill title if empty
+  const titleField = document.getElementById('f-title');
+  if(!titleField.value.trim()){
+    titleField.value = file.name.replace(/\.[^/.]+$/, '');
+  }
+
+  // Show filename in drop zone
+  const fnEl = document.getElementById('drop-filename');
+  fnEl.innerHTML = '<span class="file-type-badge">' + ext + '</span>' + file.name;
+  fnEl.classList.add('visible');
+
+  // Update icon based on file type
+  const iconEl = document.getElementById('drop-icon');
+  const icons = {
+    PDF:'📄', DOCX:'📝', DOC:'📝',
+    XLSX:'📊', XLS:'📊',
+    PPTX:'📑', PPT:'📑',
+    PNG:'🖼️', JPG:'🖼️', JPEG:'🖼️',
+    ZIP:'🗜️', TXT:'📋'
+  };
+  iconEl.textContent = icons[ext] || '📁';
+
+  // Store file reference
+  window._selectedFile = file;
+}
+
 function submitUpload(){
   const title = document.getElementById('f-title').value.trim();
   const desc  = document.getElementById('f-desc').value.trim();
   const size  = document.getElementById('f-size').value.trim();
   const cat   = document.getElementById('f-category').value;
-  if(!title || !desc){ alert('Please fill in Title and Description.'); return; }
-  docs.push({ id:'d'+Date.now(), title, category:cat, description:desc, size, downloads:0, uploadedAt:new Date() });
+
+  if(!title || !desc){
+    alert('Please fill in Title and Description.');
+    return;
+  }
+  if(!window._selectedFile){
+    alert('Please select or drop a file first.');
+    return;
+  }
+
+  // Store the actual file blob URL for real downloading
+  const fileURL = URL.createObjectURL(window._selectedFile);
+  const fileName = window._selectedFile.name;
+
+  docs.push({
+    id: 'd' + Date.now(),
+    title, category: cat,
+    description: desc,
+    size, downloads: 0,
+    uploadedAt: new Date(),
+    fileURL,   // real blob URL
+    fileName   // original filename
+  });
+
+  window._selectedFile = null;
+  document.getElementById('file-input').value = '';
+  document.getElementById('drop-filename').classList.remove('visible');
+  document.getElementById('drop-filename').innerHTML = '';
+  document.getElementById('drop-icon').textContent = '📂';
+  document.getElementById('f-title').value = '';
+  document.getElementById('f-desc').value = '';
+  document.getElementById('f-size').value = '1.0 MB';
+
   toggleUploadForm();
   renderAdminDocs();
   renderDashboard();
+
   const toast = document.getElementById('success-toast');
   toast.classList.add('visible');
-  setTimeout(()=>toast.classList.remove('visible'), 3500);
+  setTimeout(() => toast.classList.remove('visible'), 3500);
 }
 
 function deleteDoc(id){
+  if(!confirm('Are you sure you want to delete this document? This action cannot be undone.')) return;
+  const doc = docs.find(d=>d.id===id);
+  if(!doc) return;
+  archivedDocs.push({...doc, archivedAt: new Date()});
   docs = docs.filter(d=>d.id!==id);
   renderAdminDocs();
   renderDashboard();
+  renderArchive();
 }
+
+function toggleDark(){
+  document.body.classList.toggle('dark-mode');
+  const isDark = document.body.classList.contains('dark-mode');
+  document.querySelectorAll('#dark-toggle, #sidebar-dark-toggle').forEach(b=>{
+    b.textContent = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
+  });
+}
+
+function changeRole(email, newRole){
+  users[email].role = newRole;
+  if(currentUser?.email === email){
+    currentUser.role = newRole;
+    if(newRole === 'student'){
+      if(!users[email].program) { showSetupPage(); return; }
+      showStudentPage();
+    } else if(newRole === 'admin'){
+      showAdminPage();
+    }
+  }
+  renderStudentTable();
+}
+
 
 // ══════════════════════════════════════════════
 //  ADMIN STUDENTS
@@ -921,7 +1116,14 @@ function renderStudentTable(){
       <td style="color:var(--text2);">${u.program||'—'}</td>
       <td style="font-family:'DM Mono',monospace;">${dlCount}</td>
       <td><span class="status-badge ${statusClass}">${statusLabel}</span></td>
-      <td><button class="btn-block ${btnClass}" onclick="toggleBlock('${email}')">${btnLabel}</button></td>
+      <td style="display:flex;gap:6px;align-items:center;">
+        <button class="btn-block ${btnClass}" onclick="toggleBlock('${email}')">${btnLabel}</button>
+        <select onchange="changeRole('${email}',this.value)" style="padding:5px 8px;border-radius:7px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-family:inherit;font-size:12px;cursor:pointer;">
+          <option value="admin"   ${u.role==='admin'?'selected':''}>Admin</option>
+          <option value="faculty" ${u.role==='faculty'?'selected':''}>Faculty</option>
+          <option value="student" ${u.role==='student'?'selected':''}>Student</option>
+        </select>
+      </td>
     </tr>`;
   }).join('') || `<tr><td colspan="5" style="text-align:center;color:var(--text3);padding:32px;">No students found.</td></tr>`;
 }
@@ -930,6 +1132,49 @@ function toggleBlock(email){
   users[email].isBlocked = !users[email].isBlocked;
   if(currentUser?.email===email) currentUser.isBlocked = users[email].isBlocked;
   renderStudentTable();
+}
+
+function toggleBlock(email){
+  users[email].isBlocked = !users[email].isBlocked;
+  if(currentUser?.email===email) currentUser.isBlocked = users[email].isBlocked;
+  renderStudentTable();
+}
+
+function renderArchive(){
+  const grid = document.getElementById('a-archive-grid');
+  if(!grid) return;
+  if(!archivedDocs.length){
+    grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1;color:var(--text3);text-align:center;padding:60px 0;">No archived documents yet.</div>';
+    return;
+  }
+  grid.innerHTML = archivedDocs.map(d=>{
+    const colors = CAT_COLORS[d.category]||{bg:'#1e293b',text:'#94a3b8'};
+    const archivedDate = new Date(d.archivedAt).toLocaleDateString();
+    return `<div class="doc-card" style="opacity:.75;border-style:dashed;">
+      <div class="doc-card-top">
+        <span class="doc-badge" style="background:${colors.bg};color:${colors.text}">${d.category}</span>
+        <span class="doc-size">${d.size}</span>
+      </div>
+      <div class="doc-title">${d.title}</div>
+      <div class="doc-desc">${d.description}</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:4px;">Archived on ${archivedDate}</div>
+      <div class="doc-footer">
+        <span class="doc-downloads"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>${d.downloads.toLocaleString()}</span>
+        <button class="btn-download" onclick="restoreDoc('${d.id}')">♻ Restore</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function restoreDoc(id){
+  const doc = archivedDocs.find(d=>d.id===id);
+  if(!doc) return;
+  archivedDocs = archivedDocs.filter(d=>d.id!==id);
+  const {archivedAt, ...restored} = doc;
+  docs.push(restored);
+  renderAdminDocs();
+  renderArchive();
+  renderDashboard();
 }
 
 // ══════════════════════════════════════════════
