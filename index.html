@@ -1494,11 +1494,20 @@ doLogout = function() {
   _originalLogout();
 };
 </script>
-
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script>
+  firebase.initializeApp({
+    apiKey: "AIzaSyAq8rBW_xBcMw22mmim3aWtupqgY4-K5jc",
+    authDomain: "cics-dochub-8f5c2.firebaseapp.com",
+    projectId: "cics-dochub-8f5c2",
+    storageBucket: "cics-dochub-8f5c2.firebasestorage.app",
+    messagingSenderId: "715264103547",
+    appId: "1:715264103547:web:c0201b591276062be5bede",
+    measurementId: "G-PKYZQ8KHC5"
+  });
+</script>
   
   firebase.initializeApp(firebaseConfig);
 </script>
