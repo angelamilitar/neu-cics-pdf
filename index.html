@@ -776,8 +776,8 @@ async function googleLogin() {
 function doLogin() {} // kept to avoid reference errors from demo buttons
 
 function demoLogin(type){
-  if(type==='admin')   loginAs('jcesperanza@neu.edu.ph');
-  if(type==='student') loginAs('student.demo@neu.edu.ph');
+  if(type==='admin')   loginAs('admin@neu.edu.ph');
+  if(type==='student') loginAs('jcesperanza@neu.edu.ph');
   if(type==='blocked') loginAs('blocked.student@neu.edu.ph');
 }
 
@@ -800,11 +800,12 @@ function loginAs(email, displayName, roleOverride){
 }
 
 function signOut(){
-  if(typeof firebase !== 'undefined') firebase.auth().signOut();
   currentUser = null;
   showPage('login');
+  document.getElementById('login-email').value='';
   document.getElementById('login-error').style.display='none';
 }
+
 // ══════════════════════════════════════════════
 //  PAGES
 // ══════════════════════════════════════════════
@@ -1172,6 +1173,12 @@ function toggleBlock(email){
   renderStudentTable();
 }
 
+function toggleBlock(email){
+  users[email].isBlocked = !users[email].isBlocked;
+  if(currentUser?.email===email) currentUser.isBlocked = users[email].isBlocked;
+  renderStudentTable();
+}
+
 function renderArchive(){
   const grid = document.getElementById('a-archive-grid');
   if(!grid) return;
@@ -1293,63 +1300,206 @@ function renderDashboard(){
       <span class="top-dl-badge">${d.pDl} dl</span>
     </div>`).join('');
 }
+
 // ============================================================
 //  FIREBASE AUTH STATE OBSERVER
 // ============================================================
+let pendingGoogleUser = null;
+
+// Watch for auth changes (handles page refresh)
 document.addEventListener('DOMContentLoaded', function() {
   if (typeof firebase !== 'undefined') {
-    firebase.auth().onAuthStateChanged(async function(firebaseUser) {
-      if (!firebaseUser) return;
-      const email = firebaseUser.email;
-      if (!email || !email.endsWith('@neu.edu.ph')) {
-        firebase.auth().signOut();
-        return;
-      }
-      try {
+    firebase.auth().onAuthStateChanged(async function(user) {
+      if (user && user.email && user.email.endsWith('@neu.edu.ph')) {
         const db = firebase.firestore();
-        const snap = await db.collection('cics_users').doc(firebaseUser.uid).get();
-        const data = snap.exists ? snap.data() : {};
-        if (data.isBlocked) {
-          await firebase.auth().signOut();
-          alert('Your account is blocked. Contact admin.');
-          return;
+        const userDoc = await db.collection('users').doc(user.uid).get();
+        if (userDoc.exists) {
+          const data = userDoc.data();
+          if (data.blocked) { showPage('page-blocked'); return; }
+          if (data.role === 'admin') {
+            currentUser = { uid: user.uid, name: user.displayName, email: user.email, role: 'admin', photo: user.photoURL };
+            renderRoomsGrid('rooms-grid-admin');
+            renderChart('usage-chart', 'week');
+            renderChart('monthly-chart', 'month');
+            startClock('admin-clock');
+            showPage('page-admin');
+          } else if (data.college && data.program) {
+            currentUser = { uid: user.uid, name: user.displayName, email: user.email, role: 'professor', photo: user.photoURL, college: data.college, program: data.program };
+            setupProfessorPortal();
+          }
         }
-        const role = data.role || 'student';
-        const program = data.program || null;
-        // Sync into local users map
-        if (!users[email]) users[email] = {};
-        users[email].name      = firebaseUser.displayName || data.name || email.split('@')[0];
-        users[email].role      = role;
-        users[email].isBlocked = !!data.isBlocked;
-        users[email].program   = program;
-        currentUser = { email, ...users[email] };
-        if (role === 'admin') {
-          showAdminPage();
-        } else if (!program) {
-          showSetupPage();
-        } else {
-          showStudentPage();
-        }
-      } catch(err) {
-        console.error('Auth state error:', err);
       }
     });
   }
 });
+
+// ============================================================
+//  PROGRAM SELECTION (post-Google-login step)
+// ============================================================
+function showProgramSelectionModal() {
+  const u = pendingGoogleUser;
+  if (!u) return;
+
+  // Show photo or initials
+  const photoEl = document.getElementById('google-user-photo');
+  if (u.photo) {
+    photoEl.innerHTML = '<img src="' + u.photo + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%" />';
+  } else {
+    photoEl.textContent = u.name ? u.name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase() : 'P';
+  }
+  document.getElementById('google-user-name').textContent = u.name || 'Professor';
+  document.getElementById('google-user-email').textContent = u.email;
+
+  openModal('modal-program-select');
+}
+
+async function confirmProgramSelect() {
+  const college = document.getElementById('modal-college').value;
+  const program = document.getElementById('modal-program').value;
+  if (!college || !program) {
+    showToast('error', '⚠ Required', 'Please select your college and program.');
+    return;
+  }
+
+  const u = pendingGoogleUser;
+  if (!u) return;
+
+  try {
+    const db = firebase.firestore();
+    await db.collection('users').doc(u.uid).set({
+      name: u.name, email: u.email, role: 'professor',
+      college, program, blocked: false,
+      lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+
+    currentUser = { uid: u.uid, name: u.name, email: u.email, role: 'professor', photo: u.photo, college, program };
+    pendingGoogleUser = null;
+    closeModal('modal-program-select');
+    setupProfessorPortal();
+    showToast('success', '✅ Welcome!', 'Logged in as ' + u.name);
+  } catch (err) {
+    showToast('error', '❌ Error', 'Could not save your profile. Try again.');
+  }
+}
+
+function cancelProgramSelect() {
+  closeModal('modal-program-select');
+  firebase.auth().signOut();
+  pendingGoogleUser = null;
+}
+
+function setupProfessorPortal() {
+  const u = currentUser;
+  // Set name and avatar
+  const nameParts = (u.name || 'P R').split(' ');
+  const initials = (nameParts[0][0] + (nameParts[nameParts.length-1][0] || '')).toUpperCase();
+  document.getElementById('prof-name').textContent = 'Prof. ' + u.name;
+  const avatarEl = document.getElementById('prof-avatar');
+  if (u.photo) {
+    avatarEl.innerHTML = '<img src="' + u.photo + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%"/>';
+    avatarEl.style.padding = '0';
+  } else {
+    avatarEl.textContent = initials;
+  }
+  // Pre-fill college/program in session form
+  const collegeEl = document.getElementById('form-college');
+  const programEl = document.getElementById('form-program');
+  if (u.college && collegeEl) {
+    for (let i = 0; i < collegeEl.options.length; i++) {
+      if (collegeEl.options[i].text === u.college) { collegeEl.selectedIndex = i; break; }
+    }
+  }
+  if (u.program && programEl) {
+    for (let i = 0; i < programEl.options.length; i++) {
+      if (programEl.options[i].text === u.program) { programEl.selectedIndex = i; break; }
+    }
+  }
+  updateStartTime();
+  renderRoomsGrid('rooms-grid-prof');
+  startClock('live-clock');
+  showPage('page-professor');
+}
+
+// ============================================================
+//  QR CODE GENERATOR (no external library needed)
+// ============================================================
+function showMyQR() {
+  if (!currentUser) return;
+  const canvas = document.getElementById('qr-canvas');
+  generateQROnCanvas(canvas, currentUser.uid + '|' + currentUser.email);
+  document.getElementById('qr-prof-name').textContent = 'Prof. ' + currentUser.name;
+  document.getElementById('qr-prof-email').textContent = currentUser.email;
+}
+
+function generateQROnCanvas(canvas, text) {
+  // Simple visual QR placeholder using a pattern based on text hash
+  const ctx = canvas.getContext('2d');
+  const size = 200;
+  const cells = 21;
+  const cellSize = size / cells;
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, size, size);
+  ctx.fillStyle = '#000000';
+
+  // Deterministic pattern from text
+  let hash = 0;
+  for (let i = 0; i < text.length; i++) { hash = ((hash << 5) - hash) + text.charCodeAt(i); hash |= 0; }
+
+  // Draw finder patterns (QR-style corners)
+  function drawFinder(x, y) {
+    ctx.fillStyle = '#000';
+    ctx.fillRect(x*cellSize, y*cellSize, 7*cellSize, 7*cellSize);
+    ctx.fillStyle = '#fff';
+    ctx.fillRect((x+1)*cellSize, (y+1)*cellSize, 5*cellSize, 5*cellSize);
+    ctx.fillStyle = '#000';
+    ctx.fillRect((x+2)*cellSize, (y+2)*cellSize, 3*cellSize, 3*cellSize);
+  }
+  drawFinder(0,0); drawFinder(14,0); drawFinder(0,14);
+
+  // Data modules
+  const rand = (i,j) => ((Math.abs(hash * (i*cells+j+1) * 2654435761) >>> 0) % 100) < 55;
+  for (let i = 0; i < cells; i++) {
+    for (let j = 0; j < cells; j++) {
+      // Skip finder pattern zones
+      if ((i<8&&j<8)||(i<8&&j>12)||(i>12&&j<8)) continue;
+      if (rand(i,j)) {
+        ctx.fillStyle = '#000';
+        ctx.fillRect(j*cellSize, i*cellSize, cellSize-0.5, cellSize-0.5);
+      }
+    }
+  }
+
+  // NEU label at bottom
+  ctx.fillStyle = '#CC0000';
+  ctx.font = 'bold 9px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('NEU PROFESSOR ID', size/2, size-3);
+}
+
+function downloadQR() {
+  const canvas = document.getElementById('qr-canvas');
+  const link = document.createElement('a');
+  link.download = 'NEU_QR_' + (currentUser ? currentUser.name.replace(/\s+/g,'_') : 'Professor') + '.png';
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+  showToast('success', '⬇ Downloaded', 'Your QR code has been saved.');
+}
+
+// ============================================================
+//  OVERRIDE LOGOUT to use Firebase signOut
+// ============================================================
+const _originalLogout = doLogout;
+doLogout = function() {
+  if (typeof firebase !== 'undefined') firebase.auth().signOut();
+  _originalLogout();
+};
 </script>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyDrECL-9GAnaeDAqMP4rud9cAhLjYs3-7Y",
-    authDomain: "neu-laboratory-usage-log-f1437.firebaseapp.com",
-    projectId: "neu-laboratory-usage-log-f1437",
-    storageBucket: "neu-laboratory-usage-log-f1437.firebasestorage.app",
-    messagingSenderId: "39504251598",
-    appId: "1:39504251598:web:adf0d39a2ffc338a69de9f"
-  };
+  
   firebase.initializeApp(firebaseConfig);
 </script>
 
