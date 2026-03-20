@@ -235,6 +235,13 @@
   }
   .btn-download:hover { background: rgba(59,126,248,.22); }
   .btn-download:disabled { background: var(--surface2); color: var(--text3); cursor: not-allowed; }
+  .btn-view {
+    display: flex; align-items: center; gap: 6px;
+    padding: 7px 13px; border-radius: 7px; border: none; cursor: pointer;
+    font-family: inherit; font-size: 13px; font-weight: 500;
+    background: rgba(13,148,136,.12); color: var(--teal); transition: background .15s;
+  }
+  .btn-view:hover { background: rgba(13,148,136,.22); }
   .btn-delete {
     display: flex; align-items: center; gap: 5px;
     padding: 7px 12px; border-radius: 7px; border: none; cursor: pointer;
@@ -439,8 +446,148 @@
     .form-grid { grid-template-columns: 1fr; }
   }
 
-@keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes spin { to { transform: rotate(360deg); } }
 
+  /* ══════════════════════════════
+     DOC VIEW MODAL
+  ══════════════════════════════ */
+  .doc-modal-overlay {
+    display: none;
+    position: fixed; inset: 0; z-index: 1000;
+    background: rgba(0,0,0,.65);
+    backdrop-filter: blur(6px);
+    align-items: center; justify-content: center;
+    padding: 24px;
+    animation: fadeOverlay .2s ease;
+  }
+  .doc-modal-overlay.open { display: flex; }
+  @keyframes fadeOverlay { from { opacity:0; } to { opacity:1; } }
+
+  .doc-modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    width: 100%; max-width: 640px;
+    max-height: 90vh;
+    display: flex; flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 40px 100px rgba(0,0,0,.6);
+    animation: slideModal .25s cubic-bezier(.34,1.56,.64,1);
+  }
+  @keyframes slideModal {
+    from { transform: translateY(28px) scale(.97); opacity:0; }
+    to   { transform: translateY(0)    scale(1);   opacity:1; }
+  }
+
+  .doc-modal-header {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    padding: 24px 24px 20px;
+    border-bottom: 1px solid var(--border);
+    gap: 16px;
+  }
+  .doc-modal-header-left { display: flex; align-items: flex-start; gap: 14px; flex: 1; min-width: 0; }
+  .doc-modal-icon {
+    width: 46px; height: 46px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; flex-shrink: 0;
+    background: var(--surface2);
+  }
+  .doc-modal-title { font-size: 17px; font-weight: 700; color: var(--text); line-height: 1.35; }
+  .doc-modal-meta { display: flex; align-items: center; gap: 10px; margin-top: 5px; flex-wrap: wrap; }
+  .doc-modal-badge {
+    font-size: 10px; font-weight: 700; letter-spacing: .7px;
+    text-transform: uppercase; padding: 3px 8px; border-radius: 4px;
+  }
+  .doc-modal-size { color: var(--text3); font-size: 12px; font-family: 'DM Mono', monospace; }
+  .doc-modal-close {
+    width: 34px; height: 34px; border-radius: 8px; border: 1px solid var(--border);
+    background: var(--surface2); color: var(--text2); cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; line-height: 1; transition: all .15s; flex-shrink: 0;
+  }
+  .doc-modal-close:hover { background: var(--border); color: var(--text); }
+
+  .doc-modal-body {
+    flex: 1; overflow-y: auto; padding: 24px;
+    display: flex; flex-direction: column; gap: 20px;
+  }
+
+  /* Info section */
+  .doc-info-section { display: flex; flex-direction: column; gap: 10px; }
+  .doc-info-label {
+    font-size: 10px; font-weight: 700; letter-spacing: 1px;
+    text-transform: uppercase; color: var(--text3); margin-bottom: 2px;
+  }
+  .doc-info-text { color: var(--text); font-size: 14px; line-height: 1.65; }
+
+  /* Stats row */
+  .doc-stats-row {
+    display: flex; gap: 12px; flex-wrap: wrap;
+  }
+  .doc-stat-pill {
+    display: flex; align-items: center; gap: 7px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 9px 14px;
+    font-size: 13px; color: var(--text2);
+  }
+  .doc-stat-pill strong { color: var(--text); font-family: 'DM Mono', monospace; }
+
+  /* Divider */
+  .doc-modal-divider {
+    height: 1px; background: var(--border); margin: 0;
+  }
+
+  /* Preview area */
+  .doc-preview-area {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); overflow: hidden;
+    min-height: 180px; display: flex; flex-direction: column;
+  }
+  .doc-preview-bar {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 14px; border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .doc-preview-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .doc-preview-title { font-size: 12px; color: var(--text3); margin-left: 4px; font-family: 'DM Mono', monospace; }
+  .doc-preview-content {
+    padding: 20px; flex: 1;
+    font-size: 13px; color: var(--text2); line-height: 1.7;
+    white-space: pre-wrap; font-family: 'DM Mono', monospace;
+  }
+  .doc-preview-embed {
+    width: 100%; min-height: 340px; border: none;
+    display: none;
+  }
+  .doc-preview-embed.visible { display: block; }
+  .doc-preview-image {
+    max-width: 100%; max-height: 340px; object-fit: contain;
+    display: none; margin: 16px auto; border-radius: 6px;
+  }
+  .doc-preview-image.visible { display: block; }
+
+  .doc-modal-footer {
+    padding: 16px 24px;
+    border-top: 1px solid var(--border);
+    display: flex; justify-content: flex-end; align-items: center; gap: 10px;
+    background: var(--surface);
+  }
+  .btn-modal-download {
+    display: flex; align-items: center; gap: 7px;
+    padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer;
+    font-family: inherit; font-size: 13px; font-weight: 600;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff; transition: opacity .15s;
+  }
+  .btn-modal-download:hover { opacity: .9; }
+  .btn-modal-download:disabled { background: var(--surface2); color: var(--text3); cursor: not-allowed; }
+  .btn-modal-close {
+    display: flex; align-items: center; gap: 7px;
+    padding: 10px 18px; border-radius: 8px; border: 1px solid var(--border);
+    background: var(--surface2); color: var(--text2); font-family: inherit;
+    font-size: 13px; cursor: pointer; transition: background .15s;
+  }
+  .btn-modal-close:hover { background: var(--border); }
 </style>
 </head>
 <body>
@@ -586,7 +733,6 @@
   </div>
   <div class="main-content">
     <!-- Dashboard -->
-    <!-- Dashboard -->
     <div id="a-dashboard" class="subpage active">
       <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;">
         <div><div class="page-title">System Monitor</div><div class="page-sub">Real-time engagement tracking for CICS DocHub</div></div>
@@ -647,17 +793,17 @@
           <textarea id="f-desc" rows="3" placeholder="Brief description of the document..." style="resize:vertical;"></textarea>
         </div>
         <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
-  <input type="file" id="file-input" accept="*/*" style="display:none" onchange="handleFileSelect(this)">
-  <div class="drop-zone-icon" id="drop-icon">📂</div>
-  <div id="drop-main-text" style="font-weight:500;">Drag & drop any file here</div>
-  <div style="font-size:12px;color:var(--text3);margin-top:6px;">
-    or <span style="color:var(--accent);font-weight:600;text-decoration:underline;">click to browse</span>
-  </div>
-  <div style="font-size:11px;color:var(--text3);margin-top:8px;">
-    Supports PDF, DOCX, XLSX, PPTX, PNG, JPG and more
-  </div>
-  <div class="drop-zone-filename" id="drop-filename"></div>
-</div>
+          <input type="file" id="file-input" accept="*/*" style="display:none" onchange="handleFileSelect(this)">
+          <div class="drop-zone-icon" id="drop-icon">📂</div>
+          <div id="drop-main-text" style="font-weight:500;">Drag & drop any file here</div>
+          <div style="font-size:12px;color:var(--text3);margin-top:6px;">
+            or <span style="color:var(--accent);font-weight:600;text-decoration:underline;">click to browse</span>
+          </div>
+          <div style="font-size:11px;color:var(--text3);margin-top:8px;">
+            Supports PDF, DOCX, XLSX, PPTX, PNG, JPG and more
+          </div>
+          <div class="drop-zone-filename" id="drop-filename"></div>
+        </div>
         <div class="form-actions">
           <button class="btn-upload" onclick="submitUpload()">Upload to Repository</button>
           <button class="btn-cancel" onclick="toggleUploadForm()">Cancel</button>
@@ -680,13 +826,88 @@
         </table>
       </div>
     </div>
+
     <!-- Archive -->
-        <div id="a-archive" class="subpage">
-          <div class="page-header"><div class="page-title">Archive</div><div class="page-sub">Deleted documents are stored here for record-keeping.</div></div>
-          <div class="doc-grid" id="a-archive-grid">
-            <div class="empty-state" style="grid-column:1/-1;color:var(--text3);text-align:center;padding:60px 0;">No archived documents yet.</div>
+    <div id="a-archive" class="subpage">
+      <div class="page-header"><div class="page-title">Archive</div><div class="page-sub">Deleted documents are stored here for record-keeping.</div></div>
+      <div class="doc-grid" id="a-archive-grid">
+        <div class="empty-state" style="grid-column:1/-1;color:var(--text3);text-align:center;padding:60px 0;">No archived documents yet.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════ DOC VIEW MODAL ════════════════ -->
+<div id="doc-view-modal" class="doc-modal-overlay" onclick="handleModalOverlayClick(event)">
+  <div class="doc-modal">
+    <div class="doc-modal-header">
+      <div class="doc-modal-header-left">
+        <div class="doc-modal-icon" id="modal-icon">📄</div>
+        <div style="min-width:0;">
+          <div class="doc-modal-title" id="modal-title">—</div>
+          <div class="doc-modal-meta">
+            <span class="doc-modal-badge" id="modal-badge">—</span>
+            <span class="doc-modal-size" id="modal-size">—</span>
           </div>
         </div>
+      </div>
+      <button class="doc-modal-close" onclick="closeDocModal()">×</button>
+    </div>
+
+    <div class="doc-modal-body">
+      <!-- Description -->
+      <div class="doc-info-section">
+        <div class="doc-info-label">Description</div>
+        <div class="doc-info-text" id="modal-desc">—</div>
+      </div>
+
+      <div class="doc-modal-divider"></div>
+
+      <!-- Stats -->
+      <div class="doc-stats-row">
+        <div class="doc-stat-pill">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <span>Downloads: <strong id="modal-downloads">0</strong></span>
+        </div>
+        <div class="doc-stat-pill">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <span>Uploaded: <strong id="modal-date">—</strong></span>
+        </div>
+        <div class="doc-stat-pill">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+          <span>Size: <strong id="modal-size2">—</strong></span>
+        </div>
+      </div>
+
+      <div class="doc-modal-divider"></div>
+
+      <!-- Preview -->
+      <div>
+        <div class="doc-info-label" style="margin-bottom:10px;">Preview</div>
+        <div class="doc-preview-area" id="modal-preview-area">
+          <div class="doc-preview-bar">
+            <div class="doc-preview-dot" style="background:#ef4444;"></div>
+            <div class="doc-preview-dot" style="background:#f59e0b;"></div>
+            <div class="doc-preview-dot" style="background:#22c55e;"></div>
+            <span class="doc-preview-title" id="modal-preview-filename">document</span>
+          </div>
+          <!-- PDF embed -->
+          <iframe class="doc-preview-embed" id="modal-pdf-embed" title="Document Preview"></iframe>
+          <!-- Image preview -->
+          <img class="doc-preview-image" id="modal-img-preview" alt="Document preview" />
+          <!-- Text/fallback preview -->
+          <div class="doc-preview-content" id="modal-text-preview"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="doc-modal-footer">
+      <button class="btn-modal-close" onclick="closeDocModal()">Close</button>
+      <button class="btn-modal-download" id="modal-dl-btn" onclick="modalDownload()">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download
+      </button>
+    </div>
   </div>
 </div>
 
@@ -702,6 +923,15 @@ const CAT_COLORS = {
   Forms:      { bg:'#3a1a2a', text:'#f472b6' },
   Guide:      { bg:'#2a2a1a', text:'#fbbf24' },
   Academic:   { bg:'#2a1a3a', text:'#a78bfa' },
+};
+
+// File-type icon map
+const FILE_ICONS = {
+  PDF:'📄', DOCX:'📝', DOC:'📝',
+  XLSX:'📊', XLS:'📊',
+  PPTX:'📑', PPT:'📑',
+  PNG:'🖼️', JPG:'🖼️', JPEG:'🖼️', GIF:'🖼️', WEBP:'🖼️',
+  ZIP:'🗜️', TXT:'📋', CSV:'📊', MP4:'🎬', MP3:'🎵',
 };
 
 const users = {
@@ -724,6 +954,7 @@ let currentUser = null;
 let currentPeriod = 'weekly';
 let selectedProgram = null;
 let activeStudentCat = 'All';
+let modalDocId = null;
 
 function daysAgo(n){ const d=new Date(); d.setDate(d.getDate()-n); return d; }
 function generateLogs(){
@@ -756,14 +987,12 @@ async function googleLogin() {
       alert('Your account is blocked. Contact admin.');
       return;
     }
-    // Save/update user in Firestore
     await db.collection('cics_users').doc(result.user.uid).set({
       name: result.user.displayName,
       email: email,
       role: userDoc.exists ? (userDoc.data().role || 'student') : 'student',
       isBlocked: false,
     }, { merge: true });
-
     const role = userDoc.exists ? (userDoc.data().role || 'student') : 'student';
     loginAs(email, result.user.displayName, role);
   } catch (err) {
@@ -773,7 +1002,7 @@ async function googleLogin() {
   }
 }
 
-function doLogin() {} // kept to avoid reference errors from demo buttons
+function doLogin() {}
 
 function demoLogin(type){
   if(type==='admin')   loginAs('admin@neu.edu.ph');
@@ -801,8 +1030,8 @@ function loginAs(email, displayName, roleOverride){
 
 function signOut(){
   currentUser = null;
+  closeDocModal();
   showPage('login');
-  document.getElementById('login-email').value='';
   document.getElementById('login-error').style.display='none';
 }
 
@@ -932,8 +1161,12 @@ function docCardHTML(doc, isBlocked, adminMode){
         <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
         ${doc.downloads.toLocaleString()}
       </span>
-      <div style="display:flex;gap:8px;">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;">
         ${adminBtn}
+        <button class="btn-view" onclick="openDocModal('${doc.id}')">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          View
+        </button>
         <button class="btn-download" ${dlDisabled} style="${dlStyle}" onclick="handleDownload('${doc.id}')">
           <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           Download
@@ -965,6 +1198,117 @@ function handleDownload(docId){
   if(document.getElementById('a-documents').classList.contains('active')) renderAdminDocs();
   renderDashboard();
 }
+
+// ══════════════════════════════════════════════
+//  DOC VIEW MODAL
+// ══════════════════════════════════════════════
+function getFileIcon(doc){
+  if(doc.fileName){
+    const ext = doc.fileName.split('.').pop().toUpperCase();
+    return FILE_ICONS[ext] || '📁';
+  }
+  return '📄';
+}
+
+function getFileExt(doc){
+  if(doc.fileName) return doc.fileName.split('.').pop().toUpperCase();
+  return 'DOC';
+}
+
+function openDocModal(docId){
+  const doc = docs.find(d=>d.id===docId);
+  if(!doc) return;
+  modalDocId = docId;
+
+  const colors = CAT_COLORS[doc.category]||{bg:'#1e293b',text:'#94a3b8'};
+
+  // Header
+  document.getElementById('modal-icon').textContent = getFileIcon(doc);
+  document.getElementById('modal-title').textContent = doc.title;
+  const badge = document.getElementById('modal-badge');
+  badge.textContent = doc.category;
+  badge.style.background = colors.bg;
+  badge.style.color = colors.text;
+  document.getElementById('modal-size').textContent = doc.size;
+
+  // Body
+  document.getElementById('modal-desc').textContent = doc.description;
+  document.getElementById('modal-downloads').textContent = doc.downloads.toLocaleString();
+  document.getElementById('modal-date').textContent = doc.uploadedAt
+    ? new Date(doc.uploadedAt).toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'})
+    : '—';
+  document.getElementById('modal-size2').textContent = doc.size;
+  document.getElementById('modal-preview-filename').textContent = doc.fileName || doc.title;
+
+  // Preview
+  const pdfEl  = document.getElementById('modal-pdf-embed');
+  const imgEl  = document.getElementById('modal-img-preview');
+  const txtEl  = document.getElementById('modal-text-preview');
+
+  pdfEl.classList.remove('visible');
+  imgEl.classList.remove('visible');
+  pdfEl.src = '';
+  imgEl.src = '';
+
+  if(doc.fileURL && doc.fileName){
+    const ext = doc.fileName.split('.').pop().toLowerCase();
+    if(ext === 'pdf'){
+      pdfEl.src = doc.fileURL;
+      pdfEl.classList.add('visible');
+      txtEl.textContent = '';
+    } else if(['png','jpg','jpeg','gif','webp','svg'].includes(ext)){
+      imgEl.src = doc.fileURL;
+      imgEl.classList.add('visible');
+      txtEl.textContent = '';
+    } else if(['txt','csv','md'].includes(ext)){
+      // Read text files
+      fetch(doc.fileURL).then(r=>r.text()).then(t=>{
+        txtEl.textContent = t.slice(0,2000) + (t.length>2000?'\n\n[... truncated for preview]':'');
+      }).catch(()=>{
+        txtEl.textContent = `[Preview not available for this file type]\n\nFile: ${doc.fileName}`;
+      });
+    } else {
+      txtEl.textContent = `📁 ${doc.fileName}\n\nFile type: .${ext.toUpperCase()}\nSize: ${doc.size}\n\nNo preview available for this file type.\nClick "Download" to open the file.`;
+    }
+  } else {
+    // Demo doc without actual file
+    txtEl.textContent = `📄 ${doc.title}\n\nCategory: ${doc.category}\nSize: ${doc.size}\n\n${doc.description}\n\n─────────────────────────────\nThis is a demo document. In a live deployment, the actual file content would be displayed here.`;
+  }
+
+  // Download button state
+  const dlBtn = document.getElementById('modal-dl-btn');
+  if(currentUser?.isBlocked){
+    dlBtn.disabled = true;
+    dlBtn.title = 'Your account is restricted';
+  } else {
+    dlBtn.disabled = false;
+    dlBtn.title = '';
+  }
+
+  document.getElementById('doc-view-modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeDocModal(){
+  document.getElementById('doc-view-modal').classList.remove('open');
+  document.body.style.overflow = '';
+  // Clear iframe src to stop any embedded resource
+  document.getElementById('modal-pdf-embed').src = '';
+  modalDocId = null;
+}
+
+function handleModalOverlayClick(e){
+  if(e.target === document.getElementById('doc-view-modal')) closeDocModal();
+}
+
+function modalDownload(){
+  if(modalDocId) handleDownload(modalDocId);
+}
+
+// Close on Escape
+document.addEventListener('keydown', function(e){
+  if(e.key === 'Escape') closeDocModal();
+});
 
 // ══════════════════════════════════════════════
 //  ADMIN DOCS
@@ -1018,32 +1362,20 @@ function applyFile(file){
   const sizeMB = (sizeKB / 1024).toFixed(2);
   const displaySize = sizeKB < 1024 ? Math.round(sizeKB) + ' KB' : sizeMB + ' MB';
 
-  // Auto-fill size field
   document.getElementById('f-size').value = displaySize;
 
-  // Auto-fill title if empty
   const titleField = document.getElementById('f-title');
   if(!titleField.value.trim()){
     titleField.value = file.name.replace(/\.[^/.]+$/, '');
   }
 
-  // Show filename in drop zone
   const fnEl = document.getElementById('drop-filename');
   fnEl.innerHTML = '<span class="file-type-badge">' + ext + '</span>' + file.name;
   fnEl.classList.add('visible');
 
-  // Update icon based on file type
   const iconEl = document.getElementById('drop-icon');
-  const icons = {
-    PDF:'📄', DOCX:'📝', DOC:'📝',
-    XLSX:'📊', XLS:'📊',
-    PPTX:'📑', PPT:'📑',
-    PNG:'🖼️', JPG:'🖼️', JPEG:'🖼️',
-    ZIP:'🗜️', TXT:'📋'
-  };
-  iconEl.textContent = icons[ext] || '📁';
+  iconEl.textContent = FILE_ICONS[ext] || '📁';
 
-  // Store file reference
   window._selectedFile = file;
 }
 
@@ -1062,7 +1394,6 @@ function submitUpload(){
     return;
   }
 
-  // Store the actual file blob URL for real downloading
   const fileURL = URL.createObjectURL(window._selectedFile);
   const fileName = window._selectedFile.name;
 
@@ -1072,8 +1403,8 @@ function submitUpload(){
     description: desc,
     size, downloads: 0,
     uploadedAt: new Date(),
-    fileURL,   // real blob URL
-    fileName   // original filename
+    fileURL,
+    fileName
   });
 
   window._selectedFile = null;
@@ -1100,6 +1431,7 @@ function deleteDoc(id){
   if(!doc) return;
   archivedDocs.push({...doc, archivedAt: new Date()});
   docs = docs.filter(d=>d.id!==id);
+  if(modalDocId === id) closeDocModal();
   renderAdminDocs();
   renderDashboard();
   renderArchive();
@@ -1126,7 +1458,6 @@ function changeRole(email, newRole){
   }
   renderStudentTable();
 }
-
 
 // ══════════════════════════════════════════════
 //  ADMIN STUDENTS
@@ -1173,12 +1504,6 @@ function toggleBlock(email){
   renderStudentTable();
 }
 
-function toggleBlock(email){
-  users[email].isBlocked = !users[email].isBlocked;
-  if(currentUser?.email===email) currentUser.isBlocked = users[email].isBlocked;
-  renderStudentTable();
-}
-
 function renderArchive(){
   const grid = document.getElementById('a-archive-grid');
   if(!grid) return;
@@ -1199,10 +1524,60 @@ function renderArchive(){
       <div style="font-size:11px;color:var(--text3);margin-top:4px;">Archived on ${archivedDate}</div>
       <div class="doc-footer">
         <span class="doc-downloads"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>${d.downloads.toLocaleString()}</span>
-        <button class="btn-download" onclick="restoreDoc('${d.id}')">♻ Restore</button>
+        <div style="display:flex;gap:8px;">
+          <button class="btn-view" onclick="openArchivedDocModal('${d.id}')">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            View
+          </button>
+          <button class="btn-download" onclick="restoreDoc('${d.id}')">♻ Restore</button>
+        </div>
       </div>
     </div>`;
   }).join('');
+}
+
+function openArchivedDocModal(id){
+  // Temporarily put in docs array, open modal, remove
+  const doc = archivedDocs.find(d=>d.id===id);
+  if(!doc) return;
+  // We'll just populate the modal directly
+  modalDocId = null; // no download from archive modal
+  const colors = CAT_COLORS[doc.category]||{bg:'#1e293b',text:'#94a3b8'};
+  document.getElementById('modal-icon').textContent = getDocIcon(doc);
+  document.getElementById('modal-title').textContent = doc.title + ' (Archived)';
+  const badge = document.getElementById('modal-badge');
+  badge.textContent = doc.category;
+  badge.style.background = colors.bg;
+  badge.style.color = colors.text;
+  document.getElementById('modal-size').textContent = doc.size;
+  document.getElementById('modal-desc').textContent = doc.description;
+  document.getElementById('modal-downloads').textContent = doc.downloads.toLocaleString();
+  document.getElementById('modal-date').textContent = doc.uploadedAt
+    ? new Date(doc.uploadedAt).toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'})
+    : '—';
+  document.getElementById('modal-size2').textContent = doc.size;
+  document.getElementById('modal-preview-filename').textContent = doc.fileName || doc.title;
+
+  const pdfEl = document.getElementById('modal-pdf-embed');
+  const imgEl = document.getElementById('modal-img-preview');
+  const txtEl = document.getElementById('modal-text-preview');
+  pdfEl.classList.remove('visible'); pdfEl.src='';
+  imgEl.classList.remove('visible'); imgEl.src='';
+  txtEl.textContent = `📁 ${doc.title}\n\n[Archived Document]\nCategory: ${doc.category}\nSize: ${doc.size}\n\n${doc.description}`;
+
+  document.getElementById('modal-dl-btn').disabled = true;
+  document.getElementById('modal-dl-btn').title = 'Restore the document to download it';
+
+  document.getElementById('doc-view-modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function getDocIcon(doc){
+  if(doc.fileName){
+    const ext = doc.fileName.split('.').pop().toUpperCase();
+    return FILE_ICONS[ext] || '📁';
+  }
+  return '📄';
 }
 
 function restoreDoc(id){
@@ -1253,7 +1628,6 @@ function renderDashboard(){
   const repoSize = docs.reduce((a,d)=>a+parseFloat(d.size),0).toFixed(1);
   const uniqueLogins = new Set(logs.map(l=>l.userId)).size;
 
-  // Stat cards
   document.getElementById('stat-grid').innerHTML = [
     { label:'Active Sessions',  value:uniqueLogins,           delta:'+12.5%', color:'#3b7ef8' },
     { label:'Doc Downloads',    value:filtered.length,         delta:'+4.3%',  color:'#22c55e' },
@@ -1265,7 +1639,6 @@ function renderDashboard(){
     </div>
   </div>`).join('');
 
-  // Chart
   const days = currentPeriod==='monthly' ? 30 : 7;
   const now = new Date();
   const chartData = Array.from({length:days},(_,i)=>{
@@ -1286,7 +1659,6 @@ function renderDashboard(){
       <span class="chart-label">${d.label}</span>
     </div>`).join('');
 
-  // Top docs
   const docRanked = docs.map(d=>({...d, pDl:filtered.filter(l=>l.documentId===d.id).length}))
     .sort((a,b)=>b.pDl-a.pDl).slice(0,3);
   document.getElementById('top-docs-title').textContent = `Top Documents (${currentPeriod})`;
@@ -1300,207 +1672,6 @@ function renderDashboard(){
       <span class="top-dl-badge">${d.pDl} dl</span>
     </div>`).join('');
 }
-
-// ============================================================
-//  FIREBASE AUTH STATE OBSERVER
-// ============================================================
-let pendingGoogleUser = null;
-
-// Watch for auth changes (handles page refresh)
-document.addEventListener('DOMContentLoaded', function() {
-  if (typeof firebase !== 'undefined') {
-    firebase.auth().onAuthStateChanged(async function(user) {
-      if (user && user.email && user.email.endsWith('@neu.edu.ph')) {
-        const db = firebase.firestore();
-        const userDoc = await db.collection('users').doc(user.uid).get();
-        if (userDoc.exists) {
-          const data = userDoc.data();
-          if (data.blocked) { showPage('page-blocked'); return; }
-          if (data.role === 'admin') {
-            currentUser = { uid: user.uid, name: user.displayName, email: user.email, role: 'admin', photo: user.photoURL };
-            renderRoomsGrid('rooms-grid-admin');
-            renderChart('usage-chart', 'week');
-            renderChart('monthly-chart', 'month');
-            startClock('admin-clock');
-            showPage('page-admin');
-          } else if (data.college && data.program) {
-            currentUser = { uid: user.uid, name: user.displayName, email: user.email, role: 'professor', photo: user.photoURL, college: data.college, program: data.program };
-            setupProfessorPortal();
-          }
-        }
-      }
-    });
-  }
-});
-
-// ============================================================
-//  PROGRAM SELECTION (post-Google-login step)
-// ============================================================
-function showProgramSelectionModal() {
-  const u = pendingGoogleUser;
-  if (!u) return;
-
-  // Show photo or initials
-  const photoEl = document.getElementById('google-user-photo');
-  if (u.photo) {
-    photoEl.innerHTML = '<img src="' + u.photo + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%" />';
-  } else {
-    photoEl.textContent = u.name ? u.name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase() : 'P';
-  }
-  document.getElementById('google-user-name').textContent = u.name || 'Professor';
-  document.getElementById('google-user-email').textContent = u.email;
-
-  openModal('modal-program-select');
-}
-
-async function confirmProgramSelect() {
-  const college = document.getElementById('modal-college').value;
-  const program = document.getElementById('modal-program').value;
-  if (!college || !program) {
-    showToast('error', '⚠ Required', 'Please select your college and program.');
-    return;
-  }
-
-  const u = pendingGoogleUser;
-  if (!u) return;
-
-  try {
-    const db = firebase.firestore();
-    await db.collection('users').doc(u.uid).set({
-      name: u.name, email: u.email, role: 'professor',
-      college, program, blocked: false,
-      lastLogin: firebase.firestore.FieldValue.serverTimestamp()
-    }, { merge: true });
-
-    currentUser = { uid: u.uid, name: u.name, email: u.email, role: 'professor', photo: u.photo, college, program };
-    pendingGoogleUser = null;
-    closeModal('modal-program-select');
-    setupProfessorPortal();
-    showToast('success', '✅ Welcome!', 'Logged in as ' + u.name);
-  } catch (err) {
-    showToast('error', '❌ Error', 'Could not save your profile. Try again.');
-  }
-}
-
-function cancelProgramSelect() {
-  closeModal('modal-program-select');
-  firebase.auth().signOut();
-  pendingGoogleUser = null;
-}
-
-function setupProfessorPortal() {
-  const u = currentUser;
-  // Set name and avatar
-  const nameParts = (u.name || 'P R').split(' ');
-  const initials = (nameParts[0][0] + (nameParts[nameParts.length-1][0] || '')).toUpperCase();
-  document.getElementById('prof-name').textContent = 'Prof. ' + u.name;
-  const avatarEl = document.getElementById('prof-avatar');
-  if (u.photo) {
-    avatarEl.innerHTML = '<img src="' + u.photo + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%"/>';
-    avatarEl.style.padding = '0';
-  } else {
-    avatarEl.textContent = initials;
-  }
-  // Pre-fill college/program in session form
-  const collegeEl = document.getElementById('form-college');
-  const programEl = document.getElementById('form-program');
-  if (u.college && collegeEl) {
-    for (let i = 0; i < collegeEl.options.length; i++) {
-      if (collegeEl.options[i].text === u.college) { collegeEl.selectedIndex = i; break; }
-    }
-  }
-  if (u.program && programEl) {
-    for (let i = 0; i < programEl.options.length; i++) {
-      if (programEl.options[i].text === u.program) { programEl.selectedIndex = i; break; }
-    }
-  }
-  updateStartTime();
-  renderRoomsGrid('rooms-grid-prof');
-  startClock('live-clock');
-  showPage('page-professor');
-}
-
-// ============================================================
-//  QR CODE GENERATOR (no external library needed)
-// ============================================================
-function showMyQR() {
-  if (!currentUser) return;
-  const canvas = document.getElementById('qr-canvas');
-  generateQROnCanvas(canvas, currentUser.uid + '|' + currentUser.email);
-  document.getElementById('qr-prof-name').textContent = 'Prof. ' + currentUser.name;
-  document.getElementById('qr-prof-email').textContent = currentUser.email;
-}
-
-function generateQROnCanvas(canvas, text) {
-  // Simple visual QR placeholder using a pattern based on text hash
-  const ctx = canvas.getContext('2d');
-  const size = 200;
-  const cells = 21;
-  const cellSize = size / cells;
-  ctx.fillStyle = '#ffffff';
-  ctx.fillRect(0, 0, size, size);
-  ctx.fillStyle = '#000000';
-
-  // Deterministic pattern from text
-  let hash = 0;
-  for (let i = 0; i < text.length; i++) { hash = ((hash << 5) - hash) + text.charCodeAt(i); hash |= 0; }
-
-  // Draw finder patterns (QR-style corners)
-  function drawFinder(x, y) {
-    ctx.fillStyle = '#000';
-    ctx.fillRect(x*cellSize, y*cellSize, 7*cellSize, 7*cellSize);
-    ctx.fillStyle = '#fff';
-    ctx.fillRect((x+1)*cellSize, (y+1)*cellSize, 5*cellSize, 5*cellSize);
-    ctx.fillStyle = '#000';
-    ctx.fillRect((x+2)*cellSize, (y+2)*cellSize, 3*cellSize, 3*cellSize);
-  }
-  drawFinder(0,0); drawFinder(14,0); drawFinder(0,14);
-
-  // Data modules
-  const rand = (i,j) => ((Math.abs(hash * (i*cells+j+1) * 2654435761) >>> 0) % 100) < 55;
-  for (let i = 0; i < cells; i++) {
-    for (let j = 0; j < cells; j++) {
-      // Skip finder pattern zones
-      if ((i<8&&j<8)||(i<8&&j>12)||(i>12&&j<8)) continue;
-      if (rand(i,j)) {
-        ctx.fillStyle = '#000';
-        ctx.fillRect(j*cellSize, i*cellSize, cellSize-0.5, cellSize-0.5);
-      }
-    }
-  }
-
-  // NEU label at bottom
-  ctx.fillStyle = '#CC0000';
-  ctx.font = 'bold 9px sans-serif';
-  ctx.textAlign = 'center';
-  ctx.fillText('NEU PROFESSOR ID', size/2, size-3);
-}
-
-function downloadQR() {
-  const canvas = document.getElementById('qr-canvas');
-  const link = document.createElement('a');
-  link.download = 'NEU_QR_' + (currentUser ? currentUser.name.replace(/\s+/g,'_') : 'Professor') + '.png';
-  link.href = canvas.toDataURL('image/png');
-  link.click();
-  showToast('success', '⬇ Downloaded', 'Your QR code has been saved.');
-}
-
-// ============================================================
-//  OVERRIDE LOGOUT to use Firebase signOut
-// ============================================================
-const _originalLogout = doLogout;
-doLogout = function() {
-  if (typeof firebase !== 'undefined') firebase.auth().signOut();
-  _originalLogout();
-};
-</script>
-
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-<script>
-  
-  firebase.initializeApp(firebaseConfig);
 </script>
 
 </body>
